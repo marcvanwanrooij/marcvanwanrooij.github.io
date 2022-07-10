@@ -30,7 +30,7 @@ twitter_username: marcvanwanrooij
 github_username:  marcvanwanrooij
 
 # Build settings
-theme: jekyll-theme-cayman
+theme: minima
 plugins:
   - jekyll-feed
 
