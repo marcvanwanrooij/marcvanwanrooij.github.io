@@ -1,0 +1,174 @@
+<p class="clearnone"> <a href="http://www.neural-code.com/index.php/panda" target="_blank">PANDA</a> tutorial, for students and coworkers: analysis of eye- and head-position signals.</p>
+<hr id="system-readmore" />
+
+
+<h1>Background</h1>
+<p>Saccades are stereotyped and rapid eye movements. Saccade velocity and duration can tell us something about how the saccade is programmed and controlled by the brain. In this tutorial, you will analyze saccade parameters from eye movements during a sound-localization experiment.</p>
+
+
+<h1>Requirements</h1>
+<p>The <a href="http://www.neural-code.com/index.php/panda" target="_blank">PandA</a> toolbox is required for most of the data-analysis. Data for this tutorial can be found <a href="http://www.mbfys.ru.nl/staff/m.vanwanrooij/Downloads/Data/MW-BA-2010-04-26.zip" target="_parent">here</a>. It is the same data as used in the <a href="http://www.neural-code.com/index.php/tutorials/action/saccade/55-saccade-calibration" target="_blank">calibration</a> and the <a href="http://www.neural-code.com/index.php/tutorials/action/saccade/56-saccade-detection" target="_blank">detection</a> tutorials.</p>
+<h1>Analysis
+</h1>
+<p>After <a href="http://www.neural-code.com/index.php/tutorials/action/saccade/56-saccade-detection" target="_blank">detecting saccades</a>, we can start analyzing the saccades/movements.  Often, you will want to write your own analysis routines. In what follows, some general basic principles are given that are most commonly used in the analysis of eye and head movements.</p>
+<h1> Saccade and Stimulus Matrix </h1>
+<p>In the analysis of measured responses, the saccade- and the stimulus matrices, both stored in the MAT-files (see the previous chapter) are often needed. As soon as the MAT files have been generated with  <pre xml:lang="matlab">pa_sac2mat</pre>
+or unzipped from an existing ZIP file, the MAT files can be loaded into MATLAB’s workspace. For example, if you need the data from XX-SS-YYYY-MM-DD-0001.mat, you type:</p>
+
+<pre xml:lang="matlab">
+load XX-SS-YYYY-MM-DD-0001.mat
+</pre>
+ 
+<p>Two matrices will now be stored in the workspace. You may verify this by typing
+the MATLAB command:</p>
+<pre xml:lang="matlab">
+whos
+</pre>
+<p>Both the Stim and the Sac matrices will be listed:</p>
+<pre xml:lang="matlab">
+  whos
+Name            Size            Bytes  Class     Attributes
+Sac           323x20            51680  double
+Stim          648x11            57024  double
+</pre>
+
+<h1> Sac matrix </h1>
+<h2> Convention</h2>
+<p>In each row of the Sac matrix <strong>all</strong> saccade parameters of <strong>one</strong> particular saccade are stored. Each column of the Sac matrix represents <strong>one</strong> particular parameter for <strong>all</strong> saccades. In Appendix B the saccade parameters of each column are all listed. The table in Appendix B can also be obtained in MATLAB  by typing:</p>
+<pre xml:lang="matlab">
+pa_index
+</pre>
+<p>Below, an example is given of a Sac matrix, for which only the first five columns are listed:</p>
+<pre xml:lang="matlab">
+ Row	Trial Number	Saccade number	Onset	Offset	Latency	…
+  1	1	1	310	340	220	…
+  2	1	2	460	470	520	…
+  3	2	1	320	360	240	…
+  4	3	0	220	244	40	…
+  5	3	1	380	400	360	…
+  6	4	1	294	340	188	…
+  7	4	2	450	466	500	…
+  8	6	1	300	342	200	…
+  Column	1	2	3	4	5	…
+</pre>
+<p>Thus, saccades from the same trial, but also from consecutive trials are listed in subsequent rows. The order is the same as was found by the detection algorithm (see <em>pa_sacdet</em>). In the first and second columns, one can see that trials 1, 3 and 4 had more than one detected saccade, each with their
+own number, whereas in trials 2 and 6 only one saccade was detected. Trial 5 is omitted from the list, because there was no saccade detected in that trial.
+Note that the first saccade of the third trial has received ranking number zero. The reason for this is that its latency was below 80 ms, in which case it can not be regarded as a stimulus-evoked saccade.</p>
+
+<h1> Stim Matrix </h1>
+<h2> Convention</h2>
+<p> In each row of the Stim matrix <strong>all</strong> stimulus parameters of <strong>one</strong> particular trial are stored. Each column of the Stim matrix represents <strong>one</strong> particular parameter for <strong>all</strong> trials. In Appendix B the stimulus parameters of each column are all listed. The table in Appendix B can also be obtained in MATLAB by typing:</p>
+
+<pre xml:lang="matlab">
+pa_index
+</pre>
+<p>Below, an example is given of a Stim matrix, for which only a part of the columns is listed:</p>
+<pre xml:lang="matlab">
+Row	Trial Number	Target Number	Mode	Azimuth	Elevation	Eccentricity	…
+  1	1	2	0	0	0	0	…
+  2	1	3	1	20	30	37.2855	…
+  3	2	2	0	0	0	0	…
+  4	3	2	0	0	0	0	…
+  5	3	3	1	2	0	2	…
+  6	3	4	4	15	40	43.8631	…
+  7	4	2	0	0 	0	0 
+  8	4	2	1	2	30	30.1809 
+  9	5	2	0	0	0	0 
+  10	5	2	1	40	10	41.7460 
+  11	6	2	0	0	0	0 
+  12	6	2	1	-20	5	20.6679 
+  Column	1	2	3	4	5	…
+</pre>
+<p>Again, subsequent trials are listed below one another, as are the parameters of subsequent stimuli within each particular trial. The first column tells us that there have been three trials, whereas the second column indicates that there have been a various number of stimuli per trial. In trial 1, the first stimulus (Target Number 2, as nr 1 is reserved for data acquistion start), a visual fixation point at the center   of FART (Mode = 0,column 3), Azimuth and elevation both 0, (columns 4 and 5). The second stimulus was a peripheral target (columns 4 and 5) and was an auditory target (Mode = 1). Trial 3 had 3 stimuli (Column 1), of which the First was visual (Mode = 0), the second was auditory (Mode = 1) and the third was a skyLED (Mode = 4). Note that, as a rule, the Sac and Stim matrices do not have an equal number of rows, since each trial may contain any number of detected saccades. In the analysis it is therefore important to keep this in mind, and always find a way to associate a given saccade with the correct trial number and  stimulus events. Below, some hints are given on how to achieve this. 
+
+<h1> Saccade Selection </h1>
+<p>After loading the appropriate Sac and Stim matrices, the first step is typically some kind of selection procedure. For example, in your analysis you may be interested in the primary saccade responses toward the stimulus in each trial only, and to disregard the correction saccades. In MATLAB such a procedure is readily implemented through the use of so-called selection vectors, or with index vectors. The definition of the selection criteria is most often implemented as a logical statement, involving logical operators like &amp; (AND), || (OR), == (EQUAL), &gt; (LARGER), &lt; (SMALLER),  etc.</p>
+<h2> Selection vectors</h2>
+<p> Suppose you want to select all primary saccades. An appropriate selection vector for primary saccades is created by looking at the saccade number in the Sac matrix (column 2). Type:</p>
+<pre xml:lang="matlab">
+selp  = (Sac(:,2)==1);
+</pre>
+
+<p>The selection vector is a column vector, containing the SAME number of rows as the Sac matrix, in which the values are only <em><strong>zero</strong></em> (the logical operation was FALSE) and <em><strong>ones</strong></em> (when TRUE).
+For our previous example this would yield:</p>
+<pre xml:lang="matlab">
+Selection	Trial Number	Saccade number	Onset	Offset	Latency	…
+  1	1	1	310	340	220	…
+  0	1	2	460	470	520	…
+  1	2	1	320	360	240	…
+  0	3	0	220	244	40	…
+  1	3	1	380	400	360	…
+  1	4	1	294	340	188	…
+  0	4	2	450	466	500	…
+  1	6	1	300	342	200	…
+  Column	1	2	3	4	5	…
+</pre>
+<p>Now suppose that you are interested in the <strong>latency</strong> of the primary saccades (column 5). By using the selection vector, <em>sel</em>, it is straightforward to generate a <em>Lat</em> vector with only the latencies of the primary saccades, as follows:
+<pre xml:lang="matlab">
+Lat = Sac(selp==1,5);
+</pre>
+<p>In plain language, this command says: “Return all values from the fifth column of the <em>Sac</em> Matrix (containing the latencies) from those rows for which the corresponding row in the <em>sel</em> vector equals 1”. The values of the <em>Lat</em> vector are therefore:</p>
+<pre xml:lang="matlab">
+Lat=[220, 240, 360, 188, 200]
+</pre>
+
+<h1> Index vectors</h1>
+<p> An alternative way to achieve the same result as in the previous example is by using an index vector. The MATLAB command <pre xml:lang="matlab">
+find</pre> generates such a vector. In our case:
+<pre xml:lang="matlab">
+indx = find(Sac(:,2)==1);
+</pre>
+In plain language: “provide the row_indices for the second column in matrix <em>Sac</em> whenever the value is equal to one”. The result of this operation yields the rows in which the primary saccades are listed:
+<pre xml:lang="matlab">
+indx = [1,3,5,8]
+</pre>
+Subsequently type:
+<pre xml:lang="matlab">
+Lat = Sac(indx,5);
+</pre>
+<p>yielding exactly the same <em>Lat</em> vector. Both methods yield entirely equivalent results, although MATLAB is slightly faster with selection vectors.</p>
+
+<p>Typically, saccades have a reasonably short latency, around 200 ms. When the latencies are much longer than that, this is an indication that the subject is not very alert, and therefore may respond in an otherwise sloppy way. For this reason it is often desirable to add an extra criterion to selected saccades, namely to exclude saccade responses with latencies exceeding, say, 350 ms. To create a selection vector or, alternatively, an index vector for this criterion type:
+<pre xml:lang="matlab">
+selt = (Sac(:,5)&lt;=350);
+indx = find(Sac(:,5)&lt;=350);
+</pre>
+The latencies of the saccades in our example that fulfill the 350 ms criterion are generated by one of the following commands:
+<pre xml:lang="matlab">
+Lat  = Sac(selt,5);
+Lat  = Sac(indx,5);
+</pre>
+The result is (check for yourself):
+<pre xml:lang="matlab">
+Lat=[220,240,40,188,200]
+</pre>
+</p>
+<p>Note, that the saccade with the 40 ms latency is now also included. This is the saccade with rank number 0 in trial 3. If you want to select:</p>
+<ul>
+  <li>only primary saccades AND</li>
+  <li>latencies less than 350 ms</li>
+</ul>
+<p> both selection criteria should be applied together. By far the simplest way to achieve this is to combine the selection vectors  into a new selection vector:</p>
+<pre xml:lang="matlab">
+sel = selp &amp; selt
+</pre>
+<p>The resulting vector now contains a 1 only when both the <em>selp</em> vector <em>and</em> the <em>selt</em> vector contain a 1 in the same row. The final selection that meets our goals is therefore:</p>
+<pre xml:lang="matlab">
+Lat = Sac(sel==1,5);
+</pre>
+<p> with the result:</p>
+<pre xml:lang="matlab">
+Lat=[220,240,188,200]
+</pre>
+<p>Note that it is relatively simple to combine selection vectors in order to impose several simultaneous constraints onto your data. The index vector is not a very useful tool for combining different criteria.</p>
+<h1> Raw Data Traces</h1>
+<pre xml:lang="matlab">
+pa_loaddat
+pa_loadraw
+</pre>
+<h1> Matching the Stim and Sac matrices</h1>
+<pre xml:lang="matlab">
+pa_supersac
+</pre>
+<h1>Go Ahead </h1>
+<p>&nbsp;</p>
