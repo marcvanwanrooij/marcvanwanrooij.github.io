@@ -21,6 +21,7 @@ group :jekyll_plugins do
   gem 'nokogiri'
   gem 'rack', '~> 2.0.1'
   gem 'rspec'
+  gem 'webrick'
 end
 
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem
